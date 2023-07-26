@@ -93,7 +93,19 @@ struct RoomScreenViewState: BindableState {
     var timelineViewState = TimelineViewState() // check the doc before changing this
     var composerMode: RoomScreenComposerMode = .default
 
-    var bindings: RoomScreenViewStateBindings
+    var bindings: RoomScreenViewStateBindings {
+        didSet {
+            guard bindings.isScrolledToBottom,
+                  !oldValue.isScrolledToBottom,
+                  timelineViewState.pendingTimelineIDs.count > 0 else {
+                return
+            }
+            var newTimelineViewState = timelineViewState
+            newTimelineViewState.renderedTimelineIDs = timelineViewState.renderedTimelineIDs + timelineViewState.pendingTimelineIDs
+            newTimelineViewState.pendingTimelineIDs = []
+            timelineViewState = newTimelineViewState
+        }
+    }
     
     /// A closure providing the actions to show when long pressing on an item in the timeline.
     var timelineItemMenuActionProvider: (@MainActor (_ itemId: TimelineItemIdentifier) -> TimelineItemMenuActions?)?
@@ -107,7 +119,8 @@ struct RoomScreenViewStateBindings {
     var composerText: String
     var composerFocused: Bool
     
-    var scrollToBottomButtonVisible = false
+    var isScrolledToBottom = true
+    
     var showAttachmentPopover = false {
         didSet {
             composerFocused = false
@@ -178,13 +191,15 @@ struct TimelineViewState {
     var canBackPaginate = true
     var isBackPaginating = false
     var itemsDictionary = OrderedDictionary<String, RoomTimelineItemViewState>()
+    var renderedTimelineIDs = [String]()
+    var pendingTimelineIDs = [String]()
 
     var timelineIDs: [String] {
         itemsDictionary.keys.elements
     }
 
     var itemViewStates: [RoomTimelineItemViewState] {
-        itemsDictionary.values.elements
+        renderedTimelineIDs.compactMap { itemsDictionary[$0] }
     }
 
     var paginateAction: (() -> Void)?

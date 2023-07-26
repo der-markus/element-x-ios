@@ -292,8 +292,19 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
                 }
             }
         }
-        
-        state.timelineViewState.itemsDictionary = timelineItemsDictionary
+        let newIDs = Array(timelineItemsDictionary.keys)
+        var newTimelineViewState = state.timelineViewState
+        if !state.bindings.isScrolledToBottom,
+           let last = state.timelineViewState.renderedTimelineIDs.last,
+           let matchedIndexInNewIDs = newIDs.firstIndex(where: { $0 == last }) {
+            newTimelineViewState.pendingTimelineIDs = Array(newIDs.dropFirst(matchedIndexInNewIDs + 1))
+            newTimelineViewState.renderedTimelineIDs = Array(newIDs.dropLast(newIDs.count - (matchedIndexInNewIDs + 1)))
+            state.timelineViewState = newTimelineViewState
+        } else {
+            newTimelineViewState.renderedTimelineIDs = Array(timelineItemsDictionary.keys)
+        }
+        newTimelineViewState.itemsDictionary = timelineItemsDictionary
+        state.timelineViewState = newTimelineViewState
     }
 
     private func canGroupItem(timelineItem: RoomTimelineItemProtocol, with otherTimelineItem: RoomTimelineItemProtocol) -> Bool {

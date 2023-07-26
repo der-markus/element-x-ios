@@ -81,9 +81,10 @@ struct RoomScreen: View {
                 }
             }
     }
-
+    
     private var timeline: some View {
-        TimelineView(viewState: context.viewState.timelineViewState)
+        TimelineView(viewState: context.viewState.timelineViewState,
+                     isScrolledToBottom: $context.isScrolledToBottom)
             .id(context.viewState.roomId)
             .environmentObject(context)
             .environment(\.timelineStyle, context.viewState.timelineStyle)

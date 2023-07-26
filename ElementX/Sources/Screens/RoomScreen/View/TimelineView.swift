@@ -21,6 +21,7 @@ import SwiftUIIntrospect
 
 struct TimelineView: View {
     let viewState: TimelineViewState
+    @Binding var isScrolledToBottom: Bool
     @Environment(\.timelineStyle) private var timelineStyle
 
     private let bottomID = "RoomTimelineBottomPinIdentifier"
@@ -29,7 +30,10 @@ struct TimelineView: View {
     @State private var scrollViewAdapter = ScrollViewAdapter()
     @State private var paginateBackwardsPublisher = PassthroughSubject<Void, Never>()
     @State private var scrollToBottomPublisher = PassthroughSubject<Void, Never>()
-    @State private var scrollToBottomButtonVisible = false
+    
+    private var scrollToBottomButtonVisible: Bool {
+        !isScrolledToBottom
+    }
 
     var body: some View {
         ScrollViewReader { scrollView in
@@ -72,15 +76,15 @@ struct TimelineView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .overlay(scrollToBottomButton, alignment: .bottomTrailing)
-        .animation(.elementDefault, value: viewState.itemViewStates)
+        .animation(.elementDefault, value: viewState.timelineIDs)
         .onReceive(scrollViewAdapter.didScroll) { _ in
             guard let scrollView = scrollViewAdapter.scrollView else {
                 return
             }
             let offset = scrollView.contentOffset.y + scrollView.contentInset.top
-            let scrollToBottomButtonVisibleValue = offset > 0
-            if scrollToBottomButtonVisibleValue != scrollToBottomButtonVisible {
-                scrollToBottomButtonVisible = scrollToBottomButtonVisibleValue
+            let isScrolledToBottomValue = offset <= 0
+            if isScrolledToBottomValue != isScrolledToBottom {
+                isScrolledToBottom = isScrolledToBottomValue
             }
             paginateBackwardsPublisher.send()
 

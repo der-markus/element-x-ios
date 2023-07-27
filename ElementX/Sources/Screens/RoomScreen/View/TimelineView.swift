@@ -76,7 +76,7 @@ struct TimelineView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .overlay(scrollToBottomButton, alignment: .bottomTrailing)
-        .animation(.elementDefault, value: viewState.timelineIDs)
+        .animation(.elementDefault, value: viewState.animateTimelineChange)
         .onReceive(scrollViewAdapter.didScroll) { _ in
             guard let scrollView = scrollViewAdapter.scrollView else {
                 return

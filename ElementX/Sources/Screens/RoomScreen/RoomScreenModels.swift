@@ -193,6 +193,7 @@ struct TimelineViewState {
     var itemsDictionary = OrderedDictionary<String, RoomTimelineItemViewState>()
     var renderedTimelineIDs = [String]()
     var pendingTimelineIDs = [String]()
+    var animateTimelineChange = false
 
     var timelineIDs: [String] {
         itemsDictionary.keys.elements

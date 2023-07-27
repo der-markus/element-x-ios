@@ -299,8 +299,10 @@ class RoomScreenViewModel: RoomScreenViewModelType, RoomScreenViewModelProtocol 
            let matchedIndexInNewIDs = newIDs.firstIndex(where: { $0 == last }) {
             newTimelineViewState.pendingTimelineIDs = Array(newIDs.dropFirst(matchedIndexInNewIDs + 1))
             newTimelineViewState.renderedTimelineIDs = Array(newIDs.dropLast(newIDs.count - (matchedIndexInNewIDs + 1)))
-            state.timelineViewState = newTimelineViewState
         } else {
+            if state.bindings.isScrolledToBottom {
+                newTimelineViewState.animateTimelineChange.toggle()
+            }
             newTimelineViewState.renderedTimelineIDs = Array(timelineItemsDictionary.keys)
         }
         newTimelineViewState.itemsDictionary = timelineItemsDictionary

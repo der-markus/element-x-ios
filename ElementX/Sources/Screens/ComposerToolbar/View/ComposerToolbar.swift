@@ -15,9 +15,11 @@
 //
 
 import SwiftUI
+import WysiwygComposer
 
 struct ComposerToolbar: View {
     @ObservedObject var context: ComposerToolbarViewModel.Context
+    let wysiwygViewModel: WysiwygComposerViewModel
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 10) {
@@ -29,22 +31,25 @@ struct ComposerToolbar: View {
     }
 
     private var messageComposer: some View {
-        MessageComposer(text: $context.composerText,
+        MessageComposer(composerView: composerView,
                         focused: $context.composerFocused,
+                        idealHeight: wysiwygViewModel.idealHeight,
                         sendingDisabled: context.viewState.sendButtonDisabled,
                         mode: context.viewState.composerMode) {
-            sendMessage()
+            context.send(viewAction: .sendMessage)
         } pasteAction: { provider in
             context.send(viewAction: .handlePasteOrDrop(provider: provider))
         } replyCancellationAction: {
             context.send(viewAction: .cancelReply)
         } editCancellationAction: {
             context.send(viewAction: .cancelEdit)
+        } onAppearAction: {
+            context.send(viewAction: .composerAppeared)
         }
     }
 
-    private func sendMessage() {
-        guard !context.viewState.sendButtonDisabled else { return }
-        context.send(viewAction: .sendMessage(message: context.composerText, mode: context.viewState.composerMode))
+    private var composerView: AnyView {
+        AnyView(WysiwygComposerView(focused: $context.composerFocused, viewModel: wysiwygViewModel)
+            .placeholder(L10n.richTextEditorComposerPlaceholder))
     }
 }

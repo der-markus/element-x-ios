@@ -15,6 +15,7 @@
 //
 
 import SwiftUI
+import WysiwygComposer
 
 struct RoomScreen: View {
     @ObservedObject var context: RoomScreenViewModel.Context
@@ -152,11 +153,13 @@ struct RoomScreen_Previews: PreviewProvider {
                                                analytics: ServiceLocator.shared.analytics,
                                                userIndicatorController: ServiceLocator.shared.userIndicatorController)
 
-    static let composerViewModel = ComposerToolbarViewModel()
+    static let wysiwygViewModel = WysiwygComposerViewModel()
+    static let composerViewModel = ComposerToolbarViewModel(wysiwygViewModel: wysiwygViewModel)
+    static let composerToolbar = ComposerToolbar(context: composerViewModel.context, wysiwygViewModel: wysiwygViewModel)
     
     static var previews: some View {
         NavigationStack {
-            RoomScreen(context: viewModel.context, composerToolbar: ComposerToolbar(context: composerViewModel.context))
+            RoomScreen(context: viewModel.context, composerToolbar: composerToolbar)
         }
     }
 }

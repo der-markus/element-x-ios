@@ -15,17 +15,21 @@
 //
 
 import Combine
+import WysiwygComposer
 
 typealias ComposerToolbarViewModelType = StateStoreViewModel<ComposerToolbarViewState, ComposerToolbarViewAction>
 
 final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerToolbarViewModelProtocol {
+    private let wysiwygViewModel: WysiwygComposerViewModel
     private let actionsSubject: PassthroughSubject<ComposerToolbarViewModelAction, Never> = .init()
     var actions: AnyPublisher<ComposerToolbarViewModelAction, Never> {
         actionsSubject.eraseToAnyPublisher()
     }
 
-    init() {
-        super.init(initialViewState: ComposerToolbarViewState(bindings: .init(composerText: "", composerFocused: false)))
+    init(wysiwygViewModel: WysiwygComposerViewModel) {
+        self.wysiwygViewModel = wysiwygViewModel
+
+        super.init(initialViewState: ComposerToolbarViewState(bindings: .init(composerFocused: false)))
 
         context.$viewState
             .map(\.composerMode)
@@ -38,14 +42,22 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
             .removeDuplicates()
             .sink { [weak self] in self?.actionsSubject.send(.focusedChanged(isFocused: $0)) }
             .store(in: &cancellables)
+
+        wysiwygViewModel.$isContentEmpty
+            .weakAssign(to: \.state.composerEmpty, on: self)
+            .store(in: &cancellables)
     }
 
     // MARK: - Public
 
     override func process(viewAction: ComposerToolbarViewAction) {
         switch viewAction {
-        case .sendMessage(let message, let mode):
-            actionsSubject.send(.sendMessage(message: message, mode: mode))
+        case .composerAppeared:
+            wysiwygViewModel.setup()
+        case .sendMessage:
+            guard !state.sendButtonDisabled else { return }
+
+            actionsSubject.send(.sendMessage(message: wysiwygViewModel.content.markdown, mode: state.composerMode))
         case .cancelReply:
             set(mode: .default)
         case .cancelEdit:
@@ -91,6 +103,6 @@ final class ComposerToolbarViewModel: ComposerToolbarViewModelType, ComposerTool
     }
 
     private func set(text: String) {
-        state.bindings.composerText = text
+        wysiwygViewModel.setMarkdownContent(text)
     }
 }

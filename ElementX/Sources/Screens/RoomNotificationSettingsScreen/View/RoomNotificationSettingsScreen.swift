@@ -26,11 +26,11 @@ struct RoomNotificationSettingsScreen: View {
             if !context.allowCustomSetting {
                 defaultSettingSection
             } else {
-                customSettingsSection
+                RoomNotificationSettingsCustomSectionView(context: context)
             }
         }
         .compoundForm()
-        .navigationTitle(L10n.screenRoomDetailsNotificationTitle)
+        .navigationTitle(context.viewState.navigationTitle)
         .alert(item: $context.alertInfo)
         .track(screen: .roomNotifications)
     }
@@ -80,33 +80,6 @@ struct RoomNotificationSettingsScreen: View {
         }
         .compoundFormSection()
     }
-    
-    @ViewBuilder
-    private var customSettingsSection: some View {
-        Section {
-            ForEach(context.viewState.availableCustomRoomNotificationModes, id: \.self) { mode in
-                Button {
-                    context.send(viewAction: .setCustomMode(mode))
-                } label: {
-                    LabeledContent {
-                        if context.viewState.pendingCustomMode == mode {
-                            ProgressView()
-                        } else {
-                            EmptyView()
-                        }
-                    } label: {
-                        Text(context.viewState.strings.string(for: mode))
-                    }
-                }
-                .buttonStyle(.compoundForm(accessory: .selected(context.viewState.isSelected(mode: mode))))
-                .disabled(context.viewState.pendingCustomMode != nil)
-            }
-        } header: {
-            Text(L10n.screenRoomNotificationSettingsCustomSettingsTitle)
-                .compoundFormSectionHeader()
-        }
-        .compoundFormSection()
-    }
 }
 
 // MARK: - Previews
@@ -118,7 +91,8 @@ struct RoomNotificationSettingsScreen_Previews: PreviewProvider {
         let roomProxy = RoomProxyMock(with: .init(displayName: "Room", isEncrypted: true, joinedMembersCount: 4))
         
         let model = RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
-                                                            roomProxy: roomProxy)
+                                                            roomProxy: roomProxy,
+                                                            displayAsGlobalCustomRoomSettings: false)
         
         return model
     }()
@@ -129,11 +103,12 @@ struct RoomNotificationSettingsScreen_Previews: PreviewProvider {
         let roomProxy = RoomProxyMock(with: .init(displayName: "Room", isEncrypted: true, joinedMembersCount: 4))
         
         let model = RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
-                                                            roomProxy: roomProxy)
+                                                            roomProxy: roomProxy,
+                                                            displayAsGlobalCustomRoomSettings: false)
         
         return model
     }()
-
+    
     static var previews: some View {
         RoomNotificationSettingsScreen(context: viewModel.context)
             .previewDisplayName("Default")

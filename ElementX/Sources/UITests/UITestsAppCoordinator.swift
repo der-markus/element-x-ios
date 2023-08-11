@@ -502,7 +502,7 @@ class MockScreen: Identifiable {
             let coordinator = RoomNotificationSettingsScreenCoordinator(parameters: .init(navigationStackCoordinator: navigationStackCoordinator,
                                                                                           notificationSettingsProxy: NotificationSettingsProxyMock(with: .init(defaultRoomMode: .allMessages, roomMode: .allMessages)),
                                                                                           roomProxy: RoomProxyMock(with: .init(displayName: "test", members: members)),
-                                                                                          displayAsGlobalCustomRoomSettings: false))
+                                                                                          displayAsUserDefinedRoomSettings: false))
             navigationStackCoordinator.setRootCoordinator(coordinator)
             return navigationStackCoordinator
         case .roomNotificationSettingsCustomSetting:
@@ -511,7 +511,7 @@ class MockScreen: Identifiable {
             let coordinator = RoomNotificationSettingsScreenCoordinator(parameters: .init(navigationStackCoordinator: navigationStackCoordinator,
                                                                                           notificationSettingsProxy: NotificationSettingsProxyMock(with: .init(defaultRoomMode: .allMessages, roomMode: .mentionsAndKeywordsOnly)),
                                                                                           roomProxy: RoomProxyMock(with: .init(displayName: "test", members: members)),
-                                                                                          displayAsGlobalCustomRoomSettings: false))
+                                                                                          displayAsUserDefinedRoomSettings: false))
             navigationStackCoordinator.setRootCoordinator(coordinator)
             return navigationStackCoordinator
         case .reportContent:

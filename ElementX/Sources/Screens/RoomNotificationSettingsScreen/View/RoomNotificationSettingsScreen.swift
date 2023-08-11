@@ -26,7 +26,7 @@ struct RoomNotificationSettingsScreen: View {
             if !context.allowCustomSetting {
                 defaultSettingSection
             } else {
-                RoomNotificationSettingsCustomSectionView(context: context)
+                customSettingsSection
             }
         }
         .compoundForm()
@@ -37,7 +37,6 @@ struct RoomNotificationSettingsScreen: View {
     
     // MARK: - Private
 
-    @ViewBuilder
     private var allowCustomSettingSection: some View {
         Section {
             Toggle(isOn: $context.allowCustomSetting) {
@@ -56,7 +55,6 @@ struct RoomNotificationSettingsScreen: View {
         .compoundFormSection()
     }
     
-    @ViewBuilder
     private var defaultSettingSection: some View {
         Section {
             if context.viewState.isRestoringDefautSetting {
@@ -80,6 +78,10 @@ struct RoomNotificationSettingsScreen: View {
         }
         .compoundFormSection()
     }
+    
+    private var customSettingsSection: some View {
+        RoomNotificationSettingsCustomSectionView(context: context)
+    }
 }
 
 // MARK: - Previews
@@ -90,11 +92,9 @@ struct RoomNotificationSettingsScreen_Previews: PreviewProvider {
 
         let roomProxy = RoomProxyMock(with: .init(displayName: "Room", isEncrypted: true, joinedMembersCount: 4))
         
-        let model = RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
-                                                            roomProxy: roomProxy,
-                                                            displayAsGlobalCustomRoomSettings: false)
-        
-        return model
+        return RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
+                                                       roomProxy: roomProxy,
+                                                       displayAsUserDefinedRoomSettings: false)
     }()
 
     static let viewModelCustom = {
@@ -102,11 +102,9 @@ struct RoomNotificationSettingsScreen_Previews: PreviewProvider {
 
         let roomProxy = RoomProxyMock(with: .init(displayName: "Room", isEncrypted: true, joinedMembersCount: 4))
         
-        let model = RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
-                                                            roomProxy: roomProxy,
-                                                            displayAsGlobalCustomRoomSettings: false)
-        
-        return model
+        return RoomNotificationSettingsScreenViewModel(notificationSettingsProxy: notificationSettingsProxy,
+                                                       roomProxy: roomProxy,
+                                                       displayAsUserDefinedRoomSettings: false)
     }()
     
     static var previews: some View {

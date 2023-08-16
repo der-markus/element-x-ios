@@ -53,7 +53,7 @@ class ClientProxy: ClientProxyProtocol {
     
     deinit {
         client.setDelegate(delegate: nil)
-        pauseSync()
+        stopSync()
     }
     
     let callbacks = PassthroughSubject<ClientProxyCallback, Never>()
@@ -109,37 +109,23 @@ class ClientProxy: ClientProxyProtocol {
         }
     }
 
-    var isSyncing: Bool {
-        isStartingSync || syncService?.currentState() == .running
-    }
-    
-    /// Ensure we don't call start sync whilst awaiting a previous call.
-    private var isStartingSync = false
-    
     func startSync() {
-        guard !isSyncing else { return }
-
         MXLog.info("Starting sync")
-        isStartingSync = true
         
         Task {
-            do {
-                try await syncService?.start()
-            } catch {
-                MXLog.error("Failed starting app service with error: \(error)")
-            }
-            
-            isStartingSync = false
+            await syncService?.start()
         }
     }
     
-    func pauseSync() {
+    func stopSync() {
         MXLog.info("Stopping sync")
-
-        do {
-            try syncService?.pause()
-        } catch {
-            MXLog.error("Failed pausing app service with error: \(error)")
+        
+        Task {
+            do {
+                try await syncService?.stop()
+            } catch {
+                MXLog.error("Failed pausing app service with error: \(error)")
+            }
         }
     }
     
@@ -367,19 +353,17 @@ class ClientProxy: ClientProxyProtocol {
     // MARK: Private
     
     private func restartSync(delay: Duration = .zero) {
-        isStartingSync = true
-        
         Task {
             try await Task.sleep(for: delay)
             
             do {
-                MXLog.info("Restart the app service.")
-                try await self.syncService?.start()
+                MXLog.info("Restarting the sync service.")
+                try await self.syncService?.stop()
             } catch {
-                MXLog.error("Failed restarting app service after error.")
+                MXLog.error("Failed restarting the sync service with error: \(error)")
             }
             
-            self.isStartingSync = false
+            await self.syncService?.start()
         }
     }
 
